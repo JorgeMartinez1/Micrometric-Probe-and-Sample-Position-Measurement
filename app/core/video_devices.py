@@ -6,7 +6,7 @@ import cv2
 
 from gui.video_window import VideoWindow
 
-class VideoDevices():
+class VideoDevices:
     def __init__(self, logger: logging = None):
         super().__init__()
         self.logger = logger
@@ -71,11 +71,11 @@ class VideoDevices():
 
     def set_config_cameras(self, label_left, label_right):
         """ Método para establecer la configuración de las cámaras para estereoscopía"""
-        if self.video_window_left.winfo_exists():
+        if self.video_window_left is not None and self.video_window_left.winfo_exists():
             self.video_window_left.destroy()
             self.cap_left.release()
 
-        if self.video_window_right.winfo_exists():
+        if self.video_window_right is not None and self.video_window_right.winfo_exists():
             self.video_window_right.destroy()
             self.cap_right.release()
 
@@ -84,6 +84,36 @@ class VideoDevices():
 
         self.cap_right = cv2.VideoCapture(int(label_right))
         self.label_cap_right = label_right
+
+    def set_config_videos(self, label_left, label_right):
+        """ Método para establecer la configuración de las cámaras para estereoscopía"""
+        if self.video_window_left is not None and self.video_window_left.winfo_exists():
+            self.video_window_left.destroy()
+            self.cap_left.release()
+
+        if self.video_window_right is not None and self.video_window_right.winfo_exists():
+            self.video_window_right.destroy()
+            self.cap_right.release()
+
+        platform = sys.platform
+        if platform.startswith('win'):
+            path_videos = f"{os.getcwd()}\\outputs\\tdparams\\"
+        elif platform.startswith('linux'):
+            path_videos = f"{os.getcwd()}/outputs/tdparams/"
+        elif platform.startswith('darwin'):
+            path_videos = f"{os.getcwd()}/outputs/tdparams/"
+        else:
+            self.logger.critical(f'Sistema operativo desconocido {str(platform)}')
+            return
+
+        if os.path.exists(f"{path_videos}video_l.avi") and os.path.exists(f"{path_videos}video_r.avi"):
+            self.label_cap_left = f"{path_videos}video_l.avi"
+            self.logger.debug("Se asigna video izquierdo para simulación.")
+            self.cap_left = cv2.VideoCapture(f"{path_videos}video_l.avi")
+
+            self.label_cap_right = f"{path_videos}video_r.avi"
+            self.logger.debug("Se asigna video derecho para simulación.")
+            self.cap_right = cv2.VideoCapture(f"{path_videos}video_r.avi")
 
     def show_left_cam(self, label_cam:str = None):
         if self.video_window_left is not None and self.video_window_left.winfo_exists():

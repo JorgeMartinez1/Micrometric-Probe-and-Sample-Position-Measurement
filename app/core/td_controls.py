@@ -269,32 +269,39 @@ class TDControl(TDControlsWindow):
 
         if sys.platform == "linux" or sys.platform == "linux2":
             self.stop_thread = False
-            self.logger.debug("Se identifica el sistema operativo Linux.")
-            reconstruction = threading.Thread(
-                target=imagen3d.imagen_3d,
-                args=(folder_name, num_camera_izq, num_camera_der)
-            )
-            reconstruction.start()
+            self.logger.debug("Se identifica el sistema operativo Windows.")
+            self.reconstruction_instance = MicroEscenesReconstruction(logger=self.logger, caps=self.caps,
+                                                                      configuracion=(16, 1),
+                                                                      path_params=self.outputs_tdparams_folder_path,
+                                                                      cam_calib=False, qtdp=self.queue_td_points)
+            self.reconstruction = threading.Thread(target=self.reconstruction_instance.execute, args=())
+            self.reconstruction.start()
+
+            self.verificar_cola()
         # linux
-        elif sys.platform == "darwin":
+        elif sys.platform == "darwin" or sys.platform == "Darwin":
             self.stop_thread = False
-            self.logger.debug("Se identifica el sistema operativo MacOS.")
-            imagen3d.imagen_3d(folder_name, num_camera_izq, num_camera_der)
+            self.logger.debug("Se identifica el sistema operativo Windows.")
+            self.reconstruction_instance = MicroEscenesReconstruction(logger=self.logger, caps=self.caps,
+                                                                      configuracion=(16, 1),
+                                                                      path_params=self.outputs_tdparams_folder_path,
+                                                                      cam_calib=False, qtdp=self.queue_td_points)
+            self.reconstruction = threading.Thread(target=self.reconstruction_instance.execute, args=())
+            self.reconstruction.start()
+
+            self.verificar_cola()
         # OS X
         elif sys.platform == "win32":
             self.stop_thread = False
             self.logger.debug("Se identifica el sistema operativo Windows.")
-            self.reconstruction_instance = MicroEscenesReconstruction(logger=self.logger, cap_left=self.cap_left,
-                                                                 cap_right=self.cap_right, configuracion=(16, 1),
+            self.reconstruction_instance = MicroEscenesReconstruction(logger=self.logger, caps=self.caps,
+                                                                      configuracion=(16, 1),
                                                                  path_params=self.outputs_tdparams_folder_path,
                                                                  cam_calib= False, qtdp= self.queue_td_points)
             self.reconstruction = threading.Thread(target=self.reconstruction_instance.execute, args=())
             self.reconstruction.start()
 
             self.verificar_cola()
-
-            # self.graph_3d_plt_instance = GraphTDTk()
-            # self.graph_3d_plt_instance.execute()
 
         else:
             self.logger.debug(f"Aún no hay soporte para el sistema operativo {sys.platform}. Por favor escriba su comentario por Github.")

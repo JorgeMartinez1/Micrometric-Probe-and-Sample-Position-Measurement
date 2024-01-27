@@ -43,16 +43,19 @@ from queue import Queue
 import core.gestionKalman as gestionKalman
 import core.gestionTags as gestionTags
 from core.tags import GestionTags
+from core.video_devices import VideoDevices
 
 from reportlab.lib.pagesizes import mm
 from reportlab.pdfgen import canvas
 
 class MicroEscenesReconstruction():
-    def __init__(self, logger: logging = None, cap_left: cv2.VideoCapture = None, cap_right: cv2.VideoCapture = None, configuracion:tuple = (16, 1), path_params: str = None, cam_calib: bool = False, qtdp: Queue = None):
+    def __init__(self, logger: logging = None, caps = None, configuracion:tuple = (16, 1), path_params: str = None,
+                 cam_calib: bool = False, qtdp: Queue = None):
         super().__init__()
         self.logger = logger
-        self.cap_left = cap_left
-        self.cap_right = cap_right
+        self.caps = caps
+        self.cap_left = self.caps.cap_left
+        self.cap_right = self.caps.cap_right
         self.configuracion = configuracion
         self.outputs_tdparams_folder_path = path_params
         self.cam_calib = cam_calib

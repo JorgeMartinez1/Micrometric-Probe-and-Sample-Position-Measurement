@@ -131,7 +131,11 @@ class MainControl(MainWindow):
             logger.warning("Asigne los videos correctamente a las fuentes izquierda y derecha")
             return
 
-        self.caps.set_config_cameras(cam_str_left, cam_str_right)
+        if cam_str_left == 'video_l.avi' or cam_str_right == 'video_r.avi':
+            self.caps.set_config_videos(cam_str_left, cam_str_right)
+            logger.debug("Se configuran los videos para simulación.")
+        else:
+            self.caps.set_config_cameras(cam_str_left, cam_str_right)
 
         self.td_reconstruct = TDControl(logger, self.caps, self.ser)
         self.td_reconstruct.mainloop()
@@ -167,7 +171,7 @@ class MainControl(MainWindow):
         # Esta función se ejecutará al cerrar la ventana
         self.ser.close_all()
 
-        if self.td_reconstruct is not None:
+        if self.td_reconstruct is not None and self.td_reconstruct.winfo_exists():
             # self.td_reconstruct.fn_stop_thread()
             self.td_reconstruct.on_closing()
 
