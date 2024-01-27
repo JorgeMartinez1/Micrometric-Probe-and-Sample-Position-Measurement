@@ -4,12 +4,13 @@ import queue
 import logging
 import cv2
 import threading
-import time
 
-from gui.video_window import VideoWindow
 from gui.main_window import MainWindow
 
 from core.td_controls import TDControl
+from core.serial_control import SerialControl
+from core.video_devices import VideoDevices
+import time
 
 
 logger = logging.getLogger('mmunam')
@@ -48,29 +49,21 @@ class MainControl(MainWindow):
 
         logger.info('------------- Inicio -----------')
 
-        self.fn_listar_camaras_disponibles()
-
-        self.cap_left = None
-        self.cap_right = None
+        self.ser = SerialControl(logger)
+        self.caps = VideoDevices(logger)
 
         self.td_reconstruct = None
+
+        self.fn_listar_camaras_disponibles()
 
     def on_combobox_cam_left_change(self):
         nuevo_valor = self.combo_cam_left.get()
         print(f"Nuevo valor seleccionado: {nuevo_valor}")
 
     def fn_listar_camaras_disponibles(self):
-
-        for i in range(20):
-            cap = cv2.VideoCapture(i)
-            if cap.isOpened():
-                # Agregar opción al Combobox de Tkinter
-                self.combo_cam_right['values'] = [*self.combo_cam_right['values'], str(i)]
-                self.combo_cam_left['values'] = [*self.combo_cam_left['values'], str(i)]
-                logger.info('Se encontró la cámara ' + str(i))
-            else:
-                break
-            cap.release()
+        cam_list = self.caps.get_cam_list()
+        self.combo_cam_right['values'] = cam_list
+        self.combo_cam_left['values'] = cam_list
 
     def display(self, record):
         msg = self.queue_handler.format(record)
@@ -101,13 +94,7 @@ class MainControl(MainWindow):
             logger.warning('No ha seleccionado una cámara')
             return
         else:
-            try:
-                self.cap_left = cv2.VideoCapture(int(cam_str))
-                self.video_window_left = VideoWindow(self.cap_left, 'CAMERA LEFT')
-                self.video_window_left.mainloop()
-            except Exception as e:
-                print('Error leyendo cámara: ', str(e))
-                return
+            self.caps.show_left_cam(label_cam=cam_str)
 
     def fn_ver_cam_right(self):
         cam_str = self.combo_cam_right.get()
@@ -117,96 +104,76 @@ class MainControl(MainWindow):
             logger.warning('No ha seleccionado una cámara')
             return
         else:
-            try:
-                self.cap_right = cv2.VideoCapture(int(cam_str))
-                self.video_window_right = VideoWindow(self.cap_right, 'CAMERA RIGHT')
-                self.video_window_right.mainloop()
-            except Exception as e:
-                logger.error('Error leyendo cámara: ', str(e))
-                return
+            self.caps.show_right_cam(label_cam=cam_str)
 
     def fn_gen_3d(self):
 
-        cam_str = self.combo_cam_right.get()
+        cam_str_right = self.combo_cam_right.get()
+        cam_str_left = self.combo_cam_left.get()
 
-        if cam_str == 'No se encuentran cámaras' or cam_str == '' or cam_str == 'None':
-            logger.warning('No ha seleccionado una cámara. Se lanzará la reconstrucción en modo simulación.')
-            if self.cap_right is not None:
-                self.cap_right.release()
-                self.cap_right = None
-        else:
-            try:
-                if self.cap_right is not None:
-                    self.cap_right.release()
+        if cam_str_right == 'No se encuentran cámaras' or cam_str_right == '' or cam_str_right == 'None':
+            logger.warning('No ha seleccionado una cámara derecha o video para simulación.')
+            return
 
-                self.cap_right = cv2.VideoCapture(int(cam_str))
-                logger.info(f"Se configra la cámara derecha en {cam_str}")
-            except Exception as e:
-                logger.error('Error leyendo cámara: ', str(e))
-                self.cap_right = None
+        if cam_str_left == 'No se encuentran cámaras' or cam_str_left == '' or cam_str_left == 'None':
+            logger.warning('No ha seleccionado una cámara izquierda o video para simulación.')
+            return
 
-        cam_str = self.combo_cam_left.get()
+        if cam_str_left == 'video_l.avi' and cam_str_right != 'video_r.avi':
+            logger.warning("Para simulaciones, debe seleccionar los dos videos como fuente")
+            return
 
-        if cam_str == 'No se encuentran cámaras' or cam_str == '' or cam_str == 'None':
-            logger.warning('No ha seleccionado una cámara. Se lanzará la reconstrucción en modo simulación.')
-            if self.cap_left is not None:
-                self.cap_left.release()
-                self.cap_left = None
-        else:
-            try:
-                if self.cap_left is not None:
-                    self.cap_left.release()
+        if cam_str_left != 'video_l.avi' and cam_str_right == 'video_r.avi':
+            logger.warning("Para simulaciones, debe seleccionar los dos videos como fuente")
+            return
 
-                self.cap_left = cv2.VideoCapture(int(cam_str))
-                logger.info(f"Se configra la cámara izquierda en {cam_str}")
-            except Exception as e:
-                logger.error('Error leyendo cámara: ', str(e))
-                self.cap_left = None
+        if cam_str_left == 'video_r.avi' or cam_str_right == 'video_l.avi':
+            logger.warning("Asigne los videos correctamente a las fuentes izquierda y derecha")
+            return
 
-        self.td_reconstruct = TDControl(logger, self.cap_left, self.cap_right)
+        self.caps.set_config_cameras(cam_str_left, cam_str_right)
+
+        self.td_reconstruct = TDControl(logger, self.caps, self.ser)
         self.td_reconstruct.mainloop()
 
     def fn_pictures_reports(self):
-        try:
-            # Crear e iniciar la ventana de PicturesWindow
-            self.pictures_window = tk.Tk()
-            pictures_window_instance = PicturesWindow(self.pictures_window)
-            pictures_window_instance.show_window()
-        except Exception as e:
-            logging.critical(f"Error lanzando analizador gráfico de muestras. Error: {str(e)}")
+        logger.info("Para obtener el software completo, comuníquese con los desarrolladores a "
+                     "jorge.martinez@icat.unam.mx")
 
-    def fn_config_vna(self):
-        try:
-            frame_config_vna = ConfigVNA(self, logging)
-            logging.debug("Se lanza la interfaz de configuración y control del VNA-PNA")
-            # frame_config_vna.move(400, 200)
-            frame_config_vna.show()
-        except Exception as e:
-            logging.error('Error lanzando control de VNA: ' + str(e))
+    def fn_connect_vna_pna(self):
+        logger.info("Para obtener el software completo, comuníquese con los desarrolladores a "
+                     "jorge.martinez@icat.unam.mx")
 
     def fn_get_sample(self):
-        get_sample = GetSample(logger, self.ser, self.cap_left, self.cap_right)
-        get_sample.mainloop()
-        # logging.debug("Se lanza la interfaz de control de la mesa XYZ")
-        # frame_control_xyz.show()
+        logger.info("Para obtener el software completo, comuníquese con los desarrolladores a "
+                     "jorge.martinez@icat.unam.mx")
     def fn_open_gen_patterns(self):
-        frame_patrones = GenPatterns()
-        logging.debug("Se lanza la interfaz para generación de patrones")
-        frame_patrones.exec_()
+        logger.info("Para obtener el software completo, comuníquese con los desarrolladores a "
+                      "jorge.martinez@icat.unam.mx")
+
+    def fn_calib_cam(self):
+        logger.info("Para obtener el software completo, comuníquese con los desarrolladores a "
+                      "jorge.martinez@icat.unam.mx")
+
+    def fn_ambas_camaras(self):
+        logger.info("Para obtener el software completo, comuníquese con los desarrolladores a "
+                      "jorge.martinez@icat.unam.mx")
+
+    def fn_probe_location(self):
+        logger.info("Para obtener el software completo, comuníquese con los desarrolladores a "
+                      "jorge.martinez@icat.unam.mx")
 
     def on_closing(self):
         # Esta función se ejecutará al cerrar la ventana
         self.ser.close_all()
-        if self.cap_left is not None:
-            self.cap_left.release()
-        if self.cap_right is not None:
-            self.cap_right.release()
 
         if self.td_reconstruct is not None:
             # self.td_reconstruct.fn_stop_thread()
             self.td_reconstruct.on_closing()
 
+        self.caps.close_all_video_windows()
         cv2.destroyAllWindows()
+
 
         # self.logger.warning("Cerrando procesos activos activos.")
         # Agrega aquí cualquier lógica adicional que desees ejecutar antes de cerrar la ventana

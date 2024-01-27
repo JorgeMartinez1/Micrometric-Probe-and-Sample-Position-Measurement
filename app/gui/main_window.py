@@ -42,19 +42,19 @@ class MainWindow(tk.Tk):
         self.frame_buttons = ttk.Frame(self)
         self.frame_buttons.grid(row=2, column=0, padx=10, pady=10)
 
-        self.btn_both_cams = ttk.Button(self.frame_buttons, text="Ver Ambas Cámaras")
+        self.btn_both_cams = ttk.Button(self.frame_buttons, text="Ver Ambas Cámaras", command=self.fn_ambas_camaras)
         self.btn_both_cams.grid(row=0, column=0, padx=5, pady=5)
 
-        self.btn_gen_patterns = ttk.Button(self.frame_buttons, text="Generar Patrones")
+        self.btn_gen_patterns = ttk.Button(self.frame_buttons, text="Generar Patrones", command=self.fn_open_gen_patterns)
         self.btn_gen_patterns.grid(row=0, column=1, padx=5, pady=5)
 
-        self.btn_cam_calibration = ttk.Button(self.frame_buttons, text="Calibrar Cámaras")
+        self.btn_cam_calibration = ttk.Button(self.frame_buttons, text="Calibrar Cámaras", command=self.fn_calib_cam)
         self.btn_cam_calibration.grid(row=0, column=2, padx=5, pady=5)
 
         self.btn_gen_3d = ttk.Button(self.frame_buttons, text="Generar 3D", command=self.fn_gen_3d)
         self.btn_gen_3d.grid(row=0, column=3, padx=5, pady=5)
 
-        self.btn_measur_stimation = ttk.Button(self.frame_buttons, text="Ubicar Punta")
+        self.btn_measur_stimation = ttk.Button(self.frame_buttons, text="Ubicar Punta", command=self.fn_probe_location)
         self.btn_measur_stimation.grid(row=1, column=0, padx=5, pady=5)
 
         self.btn_xyz_control = ttk.Button(self.frame_buttons, text="Control XYZ", command=self.fn_get_sample)
@@ -104,8 +104,20 @@ class MainWindow(tk.Tk):
     def fn_connect_vna_pna(self):
         print(f"Sobreescribir el método fn_connect_vna_pna")
 
+    def fn_ambas_camaras(self):
+        print(f"Sobreescribir el método fn_ambas_camaras")
+
+    def fn_open_gen_patterns(self):
+        print(f"Sobreescribir el método fn_open_gen_patterns")
+
+    def fn_calib_cam(self):
+        print(f"Sobreescribir el método fn_calib_cam")
+
     def fn_gen_3d(self):
         print(f"Sobreescribir el método fn_gen_3d")
+
+    def fn_probe_location(self):
+        print(f"Sobreescribir el método probe_location")
 
     def on_closing(self):
         # Esta función se ejecutará al cerrar la ventana

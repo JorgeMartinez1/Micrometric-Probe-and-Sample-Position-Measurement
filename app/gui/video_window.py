@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 
 
 class VideoWindow(tk.Toplevel):
-    def __init__(self, cap:cv2.VideoCapture, title):
+    def __init__(self, title = ''):
         super().__init__()
         self.title(title)
         self.geometry("640x480")
@@ -15,10 +15,14 @@ class VideoWindow(tk.Toplevel):
         self.video_label.pack(expand=True, fill="both")
 
         # self.cap = cv2.VideoCapture(index_cam)
-        self.cap = cap
-        self.after(30, self.actualizar_video)
-
+        self.cap = cv2.VideoCapture
+        self.running = False
         self.protocol("WM_DELETE_WINDOW", self.close_event)
+
+    def execute_video(self, cap:cv2.VideoCapture):
+        self.cap = cap
+        self.running = True
+        self.after(30, self.actualizar_video)
 
     def actualizar_video(self):
         ret, frame = self.cap.read()
@@ -40,4 +44,5 @@ class VideoWindow(tk.Toplevel):
         if respuesta == 'yes':
             # Realizar acciones adicionales antes de cerrar la ventana
             # self.cap.release()
+            self.running = False
             self.destroy()
