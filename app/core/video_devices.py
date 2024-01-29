@@ -6,21 +6,22 @@ import cv2
 
 from gui.video_window import VideoWindow
 
+
 class VideoDevices:
     def __init__(self, logger: logging = None):
         super().__init__()
         self.logger = logger
 
-        self.cap_left = cv2.VideoCapture
+        self.cap_left = None
         self.label_cap_left = ''
         self.video_window_left= None
-        self.cap_right = cv2.VideoCapture
+        self.cap_right = None
         self.label_cap_right = ''
         self.video_window_right = None
-        self.cap_3 = cv2.VideoCapture
+        self.cap_3 = None
         self.label_cap_3 = ''
         self.video_window_3 = None
-        self.cap_4 = cv2.VideoCapture
+        self.cap_4 = None
         self.label_cap_4 = ''
         self.video_window_4 = None
 

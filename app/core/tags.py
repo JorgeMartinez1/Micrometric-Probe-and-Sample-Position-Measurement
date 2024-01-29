@@ -6,12 +6,14 @@ import time
 import logging
 
 from core.kalman import GestionKalman
+
 class GestionTags():
     def __init__(self, logger: logging = None, configuracion=(16, 1)):
         super().__init__()
         self.logger = logger
         self.configuracion = configuracion
         self.gestion_kalman = GestionKalman(self.logger)
+
     def inicializar_tags(self):
         collection_tags = {}
 

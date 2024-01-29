@@ -14,6 +14,7 @@ import threading
 from queue import Queue
 import queue
 import matplotlib.pyplot as plt
+import time
 
 from gui.td_controls_window import TDControlsWindow
 from core.micrometric_scenes_td_reconstruction import MicroEscenesReconstruction
@@ -72,7 +73,7 @@ class TDControl(TDControlsWindow):
         self.reconstruction = threading.Thread()
         self.reconstruction_instance = None
 
-        self.graph_3d_plt_instance = None
+        self.graph_td_real_time = GraphTDTk()
 
         self.queue_probe_location = Queue()
         self.queue_td_points = Queue()
@@ -274,7 +275,7 @@ class TDControl(TDControlsWindow):
                                                                       configuracion=(16, 1),
                                                                       path_params=self.outputs_tdparams_folder_path,
                                                                       cam_calib=False, qtdp=self.queue_td_points)
-            self.reconstruction = threading.Thread(target=self.reconstruction_instance.execute, args=())
+            self.reconstruction = threading.Thread(target=self.reconstruction_instance.execute_th, args=())
             self.reconstruction.start()
 
             self.verificar_cola()
@@ -286,7 +287,7 @@ class TDControl(TDControlsWindow):
                                                                       configuracion=(16, 1),
                                                                       path_params=self.outputs_tdparams_folder_path,
                                                                       cam_calib=False, qtdp=self.queue_td_points)
-            self.reconstruction = threading.Thread(target=self.reconstruction_instance.execute, args=())
+            self.reconstruction = threading.Thread(target=self.reconstruction_instance.execute_th, args=())
             self.reconstruction.start()
 
             self.verificar_cola()
@@ -298,7 +299,7 @@ class TDControl(TDControlsWindow):
                                                                       configuracion=(16, 1),
                                                                  path_params=self.outputs_tdparams_folder_path,
                                                                  cam_calib= False, qtdp= self.queue_td_points)
-            self.reconstruction = threading.Thread(target=self.reconstruction_instance.execute, args=())
+            self.reconstruction = threading.Thread(target=self.reconstruction_instance.execute_th, args=())
             self.reconstruction.start()
 
             self.verificar_cola()
@@ -315,7 +316,8 @@ class TDControl(TDControlsWindow):
                 return
 
             # Realizar alguna acción en el hilo principal basada en el mensaje
-            self.logger.info(f"Mensaje recibido en el hilo principal: {mensaje}")
+            # self.logger.info(f"Mensaje recibido en el hilo principal: {mensaje}")
+            self.graph_td_real_time.make_graph_from_cloud_points(mensaje)
 
             # Puedes agregar más lógica aquí según tus necesidades
 
@@ -323,13 +325,16 @@ class TDControl(TDControlsWindow):
             pass  # La cola está vacía, no hay nuevos datos
 
         # Programar la próxima verificación después de un intervalo de tiempo
-        self.after(500, self.verificar_cola)
+        self.after(100, self.verificar_cola)
+
     def on_closing(self):
         # Esta función se ejecutará al cerrar la ventana
         if self.reconstruction_instance is not None:
             self.fn_stop_thread()
+            time.sleep(0.5)
             # self.logger.warning("Cerrando hilos activos.")
         # Agrega aquí cualquier lógica adicional que desees ejecutar antes de cerrar la ventana
+        self.graph_td_real_time.close_graph()
         self.destroy()
 
 

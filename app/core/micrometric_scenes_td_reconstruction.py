@@ -135,6 +135,7 @@ class MicroEscenesReconstruction():
         self.H_izq_TL = None
 
         self.logger.info("Se instancia la clase de reconstrucción 3D.")
+        self.logger.debug("Se instancia la clase para reconstrucción de escena en tiempo real")
 
     def get_cloud_points(self):
 
@@ -371,7 +372,7 @@ class MicroEscenesReconstruction():
                     f.write('\n' + line)
                 f.close
 
-    def execute(self):
+    def execute_th(self):
 
         self.logger.debug("Se ingresa en hilo de reconstrucción 3D")
 
@@ -381,8 +382,8 @@ class MicroEscenesReconstruction():
             ret1, frm1 = self.cap_left.read()
             ret2, frm2 = self.cap_right.read()
 
-            cv2.imshow("img_izq", frm1)
-            cv2.imshow("img_der", frm2)
+            # cv2.imshow("img_izq", frm1)
+            # cv2.imshow("img_der", frm2)
 
             # Se hacen copias de los frames para trabajar sobre ellas y no sobre las imágenes originales
             if self.cam_calib is True:
@@ -471,9 +472,9 @@ class MicroEscenesReconstruction():
                 self.imagen_punta = self.frame1
                 # img_tags_r = frame2
 
-            cv2.imshow("Frame 1", self.frame1)
+            # cv2.imshow("Frame 1", self.frame1)
             cv2.imshow("Imagen Punta", self.imagen_punta)
-            cv2.imshow("Frame 2", self.frame2)
+            # cv2.imshow("Frame 2", self.frame2)
             # cv2.imshow("IZQ", self.img_punta_izq)
             # cv2.imshow("Imagen_DER", self.img_punta_der)
             # cv2.imshow("Puntos", vis)

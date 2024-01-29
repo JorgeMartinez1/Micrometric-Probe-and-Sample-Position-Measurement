@@ -15,11 +15,13 @@ class VideoWindow(tk.Toplevel):
         self.video_label.pack(expand=True, fill="both")
 
         # self.cap = cv2.VideoCapture(index_cam)
-        self.cap = cv2.VideoCapture
+        self.cap = None
         self.running = False
         self.protocol("WM_DELETE_WINDOW", self.close_event)
 
-    def execute_video(self, cap:cv2.VideoCapture):
+    def execute_video(self, cap:cv2.VideoCapture = None):
+        if cap is None:
+            return
         self.cap = cap
         self.running = True
         self.after(30, self.actualizar_video)

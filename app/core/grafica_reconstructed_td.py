@@ -17,6 +17,7 @@ class GraphTDTk():
         self.ax_3d = self.fig_3d.add_subplot(111, projection='3d')
         # self.canvas = FigureCanvasTkAgg(self.fig_3d, master=self)
         # self.canvas.get_tk_widget().pack(expand=True, fill="both")
+        plt.show(block=False)
 
     def algo(self):
         xs, ys, zs = [], [], []
@@ -40,8 +41,25 @@ class GraphTDTk():
         self.ax_3d.set_zlim(-2200, 4000)
         self.ax_3d.set_title('3D Graph')
 
+    def make_graph_from_cloud_points(self, cloud_points):
+        # print("Cloud shape: ", cloud_points.shape)
+        xs, ys, zs = cloud_points[0], cloud_points[1], cloud_points[2]
+
+        self.ax_3d.clear()
+        self.ax_3d.scatter(xs, ys, zs, c='b')
+
+        self.ax_3d.set_xlabel('x axis')
+        self.ax_3d.set_ylabel('y axis')
+        self.ax_3d.set_zlabel('z axis')
+        self.ax_3d.set_zlim(-2200, 4000)
+        self.ax_3d.set_title('3D Graph')
+        plt.draw()
+
     def animate_3d_puntos_fijos(self, frame):
         self.algo()
+
+    def close_graph(self):
+        plt.close(self.fig_3d)
 
     def execute(self, *args):
         self.ani = animation.FuncAnimation(self.fig_3d, self.animate_3d_puntos_fijos, interval=100)
